@@ -114,6 +114,9 @@ brews:
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     
+    # Formula directory (follows Homebrew conventions)
+    folder: Formula
+    
     # Formula template
     homepage: "https://github.com/vladkampov/markdocify"
     description: "Convert documentation websites into consolidated markdown files"
