@@ -135,7 +135,7 @@ jobs:
 
     - name: Upload Trivy scan results
       uses: github/codeql-action/upload-sarif@v3 # v3.25.15
-      if: always()
+      if: always() && hashFiles('trivy-results.sarif') != ''
       with:
         sarif_file: 'trivy-results.sarif'
 
@@ -153,16 +153,16 @@ jobs:
         go-version: '1.24'
 
     - name: Install license checker
-      run: go install github.com/google/licensecheck@latest
+      run: |
+        # Use go-licenses which is more actively maintained
+        go install github.com/google/go-licenses@latest
 
     - name: Check dependency licenses
       run: |
-        # Create list of dependencies
-        go list -m all > dependencies.txt
-        
-        # Check for problematic licenses
+        # Check licenses using go-licenses
         echo "Checking licenses for compliance..."
-        go mod download
+        go-licenses check ./...
         
-        # You can add specific license checks here
+        # Generate license report
+        go-licenses report ./... > licenses-report.txt
         echo "License check completed"
