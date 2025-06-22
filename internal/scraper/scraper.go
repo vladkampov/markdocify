@@ -287,10 +287,10 @@ func (s *Scraper) handleHTML(e *colly.HTMLElement) {
 	}
 
 	// Only follow links if we haven't reached max depth
-	if depth < s.config.Processing.MaxDepth-1 {
+	if depth < s.config.Processing.MaxDepth {
 		s.findAndFollowLinks(e)
 	} else {
-		s.logger.Debugf("Not following links from %s (depth %d >= max %d)", currentURL, depth, s.config.Processing.MaxDepth-1)
+		s.logger.Debugf("Not following links from %s (depth %d >= max %d)", currentURL, depth, s.config.Processing.MaxDepth)
 	}
 }
 
