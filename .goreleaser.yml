@@ -1,0 +1,247 @@
+# GoReleaser configuration for markdocify
+version: 2
+
+# Project configuration
+project_name: markdocify
+
+# Environment variables check
+env:
+  - GO111MODULE=on
+
+# Build configuration
+builds:
+  - id: markdocify
+    binary: markdocify
+    main: ./cmd/markdocify
+    
+    # Target platforms
+    goos:
+      - linux
+      - darwin
+      - windows
+    
+    goarch:
+      - amd64
+      - arm64
+    
+    # Build flags
+    flags:
+      - -trimpath
+    
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+      - -X main.builtBy=goreleaser
+    
+    # Environment variables for build
+    env:
+      - CGO_ENABLED=0
+
+# Archives configuration
+archives:
+  - id: markdocify
+    builds:
+      - markdocify
+    
+    # Archive name template
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    
+    # Archive format
+    format_overrides:
+      - goos: windows
+        format: zip
+    
+    # Files to include
+    files:
+      - README.md
+      - LICENSE
+      - CONTRIBUTING.md
+      - configs/examples/*
+
+# Checksums
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+# Software Bill of Materials (SBOM)
+sboms:
+  - artifacts: archive
+    documents:
+      - "{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json"
+
+# Signing with cosign
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
+    args:
+      - "sign-blob"
+      - "--output-certificate=${certificate}"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes"
+
+# Docker images
+dockers:
+  - image_templates:
+      - "ghcr.io/vladkampov/markdocify:{{ .Version }}"
+      - "ghcr.io/vladkampov/markdocify:latest"
+    
+    dockerfile: Dockerfile
+    
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
+
+# Homebrew tap
+brews:
+  - name: markdocify
+    
+    # Repository to push the formula
+    repository:
+      owner: vladkampov
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    
+    # Formula template
+    homepage: "https://github.com/vladkampov/markdocify"
+    description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
+    license: "MIT"
+    
+    # Installation script
+    install: |
+      bin.install "markdocify"
+      
+      # Install example configurations
+      (share/"markdocify").install Dir["configs/examples/*"]
+    
+    # Test script
+    test: |
+      system "#{bin}/markdocify", "--version"
+
+# Snapcraft (Ubuntu/Snap package)
+snapcrafts:
+  - name: markdocify
+    
+    title: markdocify
+    summary: Scrape documentation sites into Markdown
+    description: |
+      markdocify is a powerful CLI tool that comprehensively scrapes 
+      documentation websites and converts them into well-formatted, 
+      single Markdown files. Perfect for creating LLM training data, 
+      offline documentation, or comprehensive knowledge bases.
+    
+    grade: stable
+    confinement: strict
+    
+    license: MIT
+    
+    apps:
+      markdocify:
+        command: markdocify
+        plugs: ["home", "network"]
+
+# Windows Scoop package
+scoops:
+  - name: markdocify
+    
+    repository:
+      owner: vladkampov
+      name: scoop-bucket
+      token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
+    
+    homepage: "https://github.com/vladkampov/markdocify"
+    description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
+    license: MIT
+
+# AUR (Arch User Repository)
+aurs:
+  - name: markdocify-bin
+    
+    homepage: "https://github.com/vladkampov/markdocify"
+    description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
+    license: MIT
+    
+    maintainers:
+      - 'Vlad Kampov <your-email@example.com>'
+    
+    private_key: '{{ .Env.AUR_KEY }}'
+    
+    git_url: 'ssh://aur@aur.archlinux.org/markdocify-bin.git'
+
+# Changelog
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+      - merge conflict
+      - Merge pull request
+
+# Release configuration
+release:
+  # GitHub release
+  github:
+    owner: vladkampov
+    name: markdocify
+  
+  # Release notes
+  header: |
+    ## markdocify {{ .Version }}
+    
+    Welcome to this new release of markdocify! 🎉
+    
+    **Full changelog**: https://github.com/vladkampov/markdocify/compare/{{ .PreviousTag }}...{{ .Tag }}
+  
+  footer: |
+    ## Installation
+    
+    ### Homebrew (macOS/Linux)
+    ```bash
+    brew install vladkampov/tap/markdocify
+    ```
+    
+    ### Direct Download
+    Download the appropriate binary for your platform from the assets above.
+    
+    ### Go Install
+    ```bash
+    go install github.com/vladkampov/markdocify/cmd/markdocify@latest
+    ```
+    
+    **Thanks to all contributors! 🙏**
+
+# Announcement
+announce:
+  # Twitter announcement (optional)
+  twitter:
+    enabled: false # Set to true if you want Twitter announcements
+    message_template: |
+      🎉 markdocify {{ .Tag }} is out! 
+      
+      Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown.
+      
+      Download: {{ .ReleaseURL }}
+      
+      #golang #documentation #markdown #llm
+
+# Metadata
+metadata:
+  mod_timestamp: '{{ .CommitTimestamp }}'

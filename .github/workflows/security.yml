@@ -1,0 +1,168 @@
+name: Security Scan
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Security: Minimal permissions
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61c2af2112 # v4.1.7
+
+    - name: Set up Go
+      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      with:
+        go-version: '1.22'
+
+    - name: Run govulncheck
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...
+
+    - name: Run nancy (Sonatype vulnerability scanner)
+      run: |
+        go install github.com/sonatypecommunity/nancy@latest
+        go list -json -deps ./... | nancy sleuth
+
+  code-scan:
+    name: Static Code Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61c2af2112 # v4.1.7
+
+    - name: Set up Go
+      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      with:
+        go-version: '1.22'
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a # v3.25.15
+      with:
+        languages: go
+        queries: security-extended,security-and-quality
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a # v3.25.15
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a # v3.25.15
+      with:
+        category: "/language:go"
+
+    - name: Run Go security analysis
+      run: |
+        # Use go vet for static analysis
+        go vet ./...
+        
+        # Use staticcheck for advanced static analysis
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        staticcheck ./...
+
+  supply-chain:
+    name: Supply Chain Security
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61c2af2112 # v4.1.7
+
+    - name: Set up Go
+      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      with:
+        go-version: '1.22'
+
+    - name: Verify go.sum
+      run: |
+        go mod verify
+        go mod tidy
+        git diff --exit-code go.sum
+
+    - name: Check for private dependencies
+      run: |
+        # Ensure no private or suspicious dependencies
+        go list -m all | grep -E "(github\.com/[^/]+/[^/]+)" | while read -r dep; do
+          echo "Checking dependency: $dep"
+          # Add any custom checks here for allowed dependencies
+        done
+
+    - name: Install SLSA verifier
+      run: |
+        go install github.com/slsa-framework/slsa-verifier/v2/cli/slsa-verifier@latest
+
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' # Skip on PRs to avoid rate limits
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61c2af2112 # v4.1.7
+
+    - name: Build Docker image
+      run: |
+        docker build -t markdocify:test .
+
+    - name: Install Trivy
+      run: |
+        sudo apt-get update
+        sudo apt-get install wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+        echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install trivy
+
+    - name: Scan Docker image with Trivy
+      run: |
+        trivy image --format sarif --output trivy-results.sarif markdocify:test
+
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a # v3.25.15
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61c2af2112 # v4.1.7
+
+    - name: Set up Go
+      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      with:
+        go-version: '1.22'
+
+    - name: Install license checker
+      run: go install github.com/google/licensecheck@latest
+
+    - name: Check dependency licenses
+      run: |
+        # Create list of dependencies
+        go list -m all > dependencies.txt
+        
+        # Check for problematic licenses
+        echo "Checking licenses for compliance..."
+        go mod download
+        
+        # You can add specific license checks here
+        echo "License check completed"

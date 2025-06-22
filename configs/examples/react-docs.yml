@@ -1,0 +1,65 @@
+name: "React Documentation"
+base_url: "https://react.dev/"
+output_file: "react-docs.md"
+
+# URL configuration
+start_urls:
+  - "https://react.dev/learn"
+  - "https://react.dev/reference"
+
+follow_patterns:
+  - "^https://react\\.dev/(learn|reference)/.*"
+
+ignore_patterns:
+  - ".*\\.(jpg|jpeg|png|gif|svg|css|js)$"
+  - ".*/edit$"
+
+# Content extraction
+selectors:
+  title: "h1"
+  content: "main article"
+  navigation: "nav[role='navigation']"
+  exclude:
+    - ".edit-this-page"
+    - "footer"
+    - ".feedback"
+    - ".prev-next"
+
+# Processing options
+processing:
+  max_depth: 5
+  concurrency: 3
+  delay: 1.0
+  preserve_code_blocks: true
+  generate_toc: true
+  sanitize_html: true
+
+# Engine configuration
+engines:
+  - type: "colly"
+    user_agent: "markdocify/1.0 (+https://github.com/vladkampov/markdocify)"
+  - type: "chromedp"
+    timeout: 30
+    wait_selector: "main article"
+
+# Output formatting
+output:
+  heading_offset: 1
+  include_metadata: true
+  syntax_highlighting: true
+  preserve_images: false
+  inline_styles: false
+
+# Security and legal
+security:
+  respect_robots: true
+  check_terms: true
+  max_file_size: "10MB"
+  allowed_domains:
+    - "react.dev"
+
+# Monitoring
+monitoring:
+  enable_metrics: true
+  log_level: "info"
+  progress_updates: true

@@ -1,0 +1,65 @@
+# Dependabot configuration for automated dependency updates
+version: 2
+
+updates:
+  # Go modules
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    # Security updates
+    open-pull-requests-limit: 10
+    
+    # Commit message configuration
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    
+    # Reviewers (optional)
+    reviewers:
+      - "vladkampov"
+    
+    # Auto-merge for patch updates
+    allow:
+      - dependency-type: "direct"
+        update-type: "version-update:semver-patch"
+      - dependency-type: "indirect"
+        update-type: "version-update:semver-patch"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    open-pull-requests-limit: 5
+    
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    
+    reviewers:
+      - "vladkampov"
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    
+    open-pull-requests-limit: 3
+    
+    commit-message:
+      prefix: "docker"
+      include: "scope"

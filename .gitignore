@@ -1,0 +1,182 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Main binary (built during development)
+markdocify
+markdocify-*
+/markdocify
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# Build artifacts
+bin/
+dist/
+build/
+*.tar.gz
+*.zip
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Output files (generated documentation)
+*.md
+!README.md
+!CONTRIBUTING.md
+!LICENSE.md
+!CI_CD_SETUP.md
+!docs/*.md
+!configs/examples/*.md
+!**/*.example.md
+
+# Test coverage files
+coverage.out
+coverage.html
+coverage.xml
+*.cover
+*.coverprofile
+
+# Test output and generated docs
+test-*.md
+example-*.md
+temp-*.md
+output-*.md
+*-docs.md
+nextjs-*.md
+react-*.md
+vue-*.md
+stripe-*.md
+vercel-*.md
+
+# Configuration files with secrets
+config.local.yml
+.env
+.env.local
+.env.*.local
+
+# State files
+.docs-scraper-state.json
+.markdocify-state.json
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Go module cache
+/go/pkg/mod/
+
+# GoReleaser artifacts
+dist/
+goreleaser
+.goreleaser.yml.backup
+
+# CI/CD artifacts
+.github/workflows/*.backup
+artifacts/
+release-notes.md
+
+# Local development
+local/
+scratch/
+dev/
+
+# Security scan results
+gosec-report.json
+gosec.sarif
+nancy-report.json
+trivy-results.sarif
+*.sarif
+security-report.*
+
+# SBOM files
+*.spdx.json
+*.spdx
+sbom.*
+
+# Profiling data
+*.prof
+*.pprof
+
+# Debugging
+debug
+debug.exe
+
+# Air live reload
+tmp/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Kubernetes
+*.kubeconfig
+
+# Signing keys and certificates
+*.key
+*.pem
+*.p12
+*.crt
+*.csr
+cosign.key
+cosign.pub
+
+# Package manager metadata
+.homebrew/
+.snapcraft/
+.scoop/

@@ -1,0 +1,70 @@
+name: "Next.js Documentation"
+base_url: "https://nextjs.org/"
+output_file: "nextjs-docs.md"
+
+# URL configuration
+start_urls:
+  - "https://nextjs.org/docs"
+
+follow_patterns:
+  - "^https://nextjs\\.org/docs/.*"
+
+ignore_patterns:
+  - ".*\\.(jpg|jpeg|png|gif|svg|css|js)$"
+  - ".*/edit$"
+  - ".*/_meta$"
+
+# Content extraction
+selectors:
+  title: "h1"
+  content: "main"
+  exclude:
+    - "nav"
+    - "footer" 
+    - ".nx-toc"
+    - ".nx-sidebar"
+    - ".nx-breadcrumb"
+    - ".nx-edit-page"
+    - ".nx-feedback"
+    - ".nx-banner"
+    - "[data-reach-skip-link]"
+    - ".nx-search"
+    - ".nx-theme-switch"
+
+# Processing options
+processing:
+  max_depth: 4
+  concurrency: 2
+  delay: 1.5
+  preserve_code_blocks: true
+  generate_toc: true
+  sanitize_html: true
+
+# Engine configuration
+engines:
+  - type: "colly"
+    user_agent: "markdocify/1.0 (+https://github.com/vladkampov/markdocify)"
+    timeout: 30
+
+# Output formatting
+output:
+  heading_offset: 1
+  include_metadata: true
+  syntax_highlighting: true
+  preserve_images: false
+  inline_styles: false
+
+# Security and legal
+security:
+  respect_robots: true
+  check_terms: true
+  max_file_size: "15MB"
+  scraping_timeout: "15m"  # 15 minutes for comprehensive documentation
+  allowed_domains:
+    - "nextjs.org"
+
+# Monitoring
+monitoring:
+  enable_metrics: true
+  log_level: "info"
+  progress_updates: true

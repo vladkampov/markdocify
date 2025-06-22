@@ -1,0 +1,41 @@
+name: "Vue.js Documentation"
+base_url: "https://vuejs.org/"
+output_file: "vue-docs.md"
+
+start_urls:
+  - "https://vuejs.org/guide/"
+  - "https://vuejs.org/api/"
+
+follow_patterns:
+  - "^https://vuejs\\.org/(guide|api)/.*"
+
+selectors:
+  title: "h1"
+  content: ".content"
+  navigation: ".sidebar"
+  exclude:
+    - ".edit-link"
+    - ".page-edit"
+
+processing:
+  max_depth: 4
+  concurrency: 2
+  delay: 1.5
+  preserve_code_blocks: true
+  generate_toc: true
+
+engines:
+  - type: "chromedp"  # Vue docs are SPA
+    timeout: 30
+    wait_selector: ".content"
+
+output:
+  heading_offset: 1
+  include_metadata: true
+  syntax_highlighting: true
+
+security:
+  respect_robots: true
+  check_terms: true
+  allowed_domains:
+    - "vuejs.org"
