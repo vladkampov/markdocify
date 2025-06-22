@@ -161,7 +161,7 @@ func TestScraperIntegration(t *testing.T) {
 		switch r.URL.Path {
 		case "/":
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`
+			if _, err := w.Write([]byte(`
 <!DOCTYPE html>
 <html>
 <head><title>Test Documentation</title></head>
@@ -173,10 +173,12 @@ func TestScraperIntegration(t *testing.T) {
 	</main>
 </body>
 </html>
-			`))
+			`)); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		case "/page1":
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`
+			if _, err := w.Write([]byte(`
 <!DOCTYPE html>
 <html>
 <head><title>Page 1</title></head>
@@ -187,7 +189,9 @@ func TestScraperIntegration(t *testing.T) {
 	</main>
 </body>
 </html>
-			`))
+			`)); err != nil {
+				t.Errorf("Failed to write response: %v", err)
+			}
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -208,7 +212,8 @@ func TestScraperIntegration(t *testing.T) {
 			GenerateTOC:        true,
 		},
 		Security: config.SecurityConfig{
-			RequestTimeout: 10 * time.Second,
+			RequestTimeout:  10 * time.Second,
+			ScrapingTimeout: 30 * time.Second,
 		},
 		Monitoring: config.MonitoringConfig{
 			LogLevel: "error", // Reduce noise in tests
@@ -237,7 +242,9 @@ func TestVisitWithRetry(t *testing.T) {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("<html><body><h1>Success</h1></body></html>"))
+		if _, err := w.Write([]byte("<html><body><h1>Success</h1></body></html>")); err != nil {
+			t.Errorf("Failed to write response: %v", err)
+		}
 	}))
 	defer server.Close()
 
