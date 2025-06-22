@@ -37,19 +37,6 @@ brew install markdocify
 brew install vladkampov/tap/markdocify
 ```
 
-**📦 Package Managers**
-```bash
-# Snap (Ubuntu/Linux)
-sudo snap install markdocify
-
-# Scoop (Windows)
-scoop bucket add vladkampov https://github.com/vladkampov/scoop-bucket
-scoop install markdocify
-
-# AUR (Arch Linux)
-yay -S markdocify-bin
-```
-
 **⬇️ Direct Download** 
 ```bash
 # Download latest release for your platform
