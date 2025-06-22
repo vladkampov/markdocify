@@ -12,7 +12,7 @@ import (
 	"github.com/vladkampov/markdocify/internal/scraper"
 )
 
-var version = "dev"
+var version = "dev" // Will be overridden by ldflags during build
 
 var rootCmd = &cobra.Command{
 	Use:   "markdocify [URL]",
