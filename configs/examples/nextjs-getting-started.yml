@@ -1,0 +1,69 @@
+name: "Next.js Getting Started"
+base_url: "https://nextjs.org/"
+output_file: "nextjs-getting-started.md"
+
+# URL configuration - focused on getting started section
+start_urls:
+  - "https://nextjs.org/docs/app/getting-started"
+
+follow_patterns:
+  - "^https://nextjs\\.org/docs/app/getting-started/.*"
+
+ignore_patterns:
+  - ".*\\.(jpg|jpeg|png|gif|svg|css|js)$"
+  - ".*/edit$"
+
+# Content extraction
+selectors:
+  title: "h1"
+  content: "main"
+  exclude:
+    - "nav"
+    - "footer" 
+    - ".nx-toc"
+    - ".nx-sidebar"
+    - ".nx-breadcrumb"
+    - ".nx-edit-page"
+    - ".nx-feedback"
+    - ".nx-banner"
+    - "[data-reach-skip-link]"
+    - ".nx-search"
+    - ".nx-theme-switch"
+
+# Processing options
+processing:
+  max_depth: 3
+  concurrency: 2
+  delay: 1.0
+  preserve_code_blocks: true
+  generate_toc: true
+  sanitize_html: true
+
+# Engine configuration
+engines:
+  - type: "colly"
+    user_agent: "markdocify/1.0 (+https://github.com/vladkampov/markdocify)"
+    timeout: 30
+
+# Output formatting
+output:
+  heading_offset: 1
+  include_metadata: true
+  syntax_highlighting: true
+  preserve_images: false
+  inline_styles: false
+
+# Security and legal
+security:
+  respect_robots: true
+  check_terms: true
+  max_file_size: "10MB"
+  scraping_timeout: "5m"  # 5 minutes should be plenty for getting started section
+  allowed_domains:
+    - "nextjs.org"
+
+# Monitoring
+monitoring:
+  enable_metrics: true
+  log_level: "info"
+  progress_updates: true

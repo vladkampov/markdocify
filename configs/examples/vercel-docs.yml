@@ -1,0 +1,67 @@
+name: "Vercel Documentation"
+base_url: "https://vercel.com/"
+output_file: "vercel-docs.md"
+
+# URL configuration
+start_urls:
+  - "https://vercel.com/docs"
+
+follow_patterns:
+  - "^https://vercel\\.com/docs/.*"
+
+ignore_patterns:
+  - ".*\\.(jpg|jpeg|png|gif|svg|css|js|ico|woff|woff2|ttf|eot)$"
+  - ".*/edit$"
+  - ".*/settings$"
+
+# Content extraction - Vercel uses specific class names
+selectors:
+  title: "h1, [data-testid='page-title']"
+  content: "main, article, [data-content], .docs-content, .content"
+  navigation: "nav, aside"
+  exclude:
+    - "header"
+    - "footer" 
+    - ".header_header__TSZx7"
+    - ".mobile-menu_root__PX9iM"
+    - "[data-testid='header']"
+    - ".cmdklaunch_wrapper__KrfZL"
+    - "button"
+    - ".toggle_mobileMenuToggle__W5y02"
+
+# Processing options
+processing:
+  max_depth: 2
+  concurrency: 1
+  delay: 2.0
+  preserve_code_blocks: true
+  generate_toc: true
+  sanitize_html: true
+
+# Engine configuration - Use ChromeDP for JavaScript-rendered content
+engines:
+  - type: "chromedp"
+    timeout: 60
+    wait_selector: "main, article, [data-content]"
+
+# Output formatting
+output:
+  heading_offset: 0
+  include_metadata: true
+  syntax_highlighting: true
+  preserve_images: false
+  inline_styles: false
+
+# Security and legal
+security:
+  respect_robots: true
+  check_terms: false
+  max_file_size: "20MB"
+  allowed_domains:
+    - "vercel.com"
+
+# Monitoring
+monitoring:
+  enable_metrics: false
+  log_level: "info"
+  progress_updates: true

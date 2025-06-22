@@ -1,0 +1,69 @@
+name: "Stripe API Documentation"
+base_url: "https://docs.stripe.com"
+output_file: "stripe-api-comprehensive.md"
+
+start_urls:
+  - "https://docs.stripe.com/api"
+
+follow_patterns:
+  - "^https://docs\\.stripe\\.com/api/.*"
+
+ignore_patterns:
+  - ".*\\.(jpg|jpeg|png|gif|svg|css|js)$"
+  - ".*/edit$"
+  - ".*dashboard.*"
+  - ".*login.*"
+  - ".*signup.*"
+  - ".*billing.*"
+  - ".*account.*"
+
+selectors:
+  title: "h1"
+  content: "main, .api-content, .reference-content, .content"
+  exclude:
+    - "nav"
+    - ".search-container"
+    - ".language-picker"
+    - ".edit-page"
+    - ".feedback"
+    - ".navigation-links"
+    - "header"
+    - "footer"
+    - ".sidebar"
+    - ".breadcrumb"
+    - ".page-nav"
+    - ".mobile-nav"
+    - ".search-overlay"
+    - ".cookie-banner"
+
+processing:
+  max_depth: 4
+  concurrency: 2
+  delay: 2.0
+  preserve_code_blocks: true
+  generate_toc: true
+  sanitize_html: true
+
+engines:
+  - type: "colly"
+    user_agent: "markdocify/1.0 (+https://github.com/vladkampov/markdocify)"
+    timeout: 45
+
+output:
+  heading_offset: 1
+  include_metadata: true
+  syntax_highlighting: true
+  preserve_images: false
+  inline_styles: false
+
+security:
+  respect_robots: true
+  check_terms: true
+  max_file_size: "50MB"
+  allowed_domains:
+    - "docs.stripe.com"
+
+monitoring:
+  enable_metrics: true
+  log_level: "info"
+  progress_updates: true
