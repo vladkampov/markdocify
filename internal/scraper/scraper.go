@@ -94,7 +94,7 @@ func (s *Scraper) createCollector() *colly.Collector {
 	c.SetRequestTimeout(s.config.Security.RequestTimeout)
 
 	c.OnRequest(func(r *colly.Request) {
-		s.logger.Debugf("Visiting: %s", r.URL.String())
+		s.logger.WithField("url", r.URL.String()).Debug("Visiting URL")
 	})
 
 	c.OnHTML("html", s.handleHTML)
