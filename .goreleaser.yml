@@ -115,7 +115,7 @@ brews:
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     
     # Formula directory (follows Homebrew conventions)
-    folder: Formula
+    directory: Formula
     
     # Formula template
     homepage: "https://github.com/vladkampov/markdocify"
