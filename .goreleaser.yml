@@ -105,31 +105,34 @@ signs:
 #       - "--platform=linux/amd64"
 
 # Homebrew tap
-# Disabled for initial release - requires homebrew-tap repository to exist
-# brews:
-#   - name: markdocify
-#     
-#     # Repository to push the formula
-#     repository:
-#       owner: vladkampov
-#       name: homebrew-tap
-#       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-#     
-#     # Formula template
-#     homepage: "https://github.com/vladkampov/markdocify"
-#     description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
-#     license: "MIT"
-#     
-#     # Installation script
-#     install: |
-#       bin.install "markdocify"
-#       
-#       # Install example configurations
-#       (share/"markdocify").install Dir["configs/examples/*"]
-#     
-#     # Test script
-#     test: |
-#       system "#{bin}/markdocify", "--version"
+brews:
+  - name: markdocify
+    
+    # Repository to push the formula
+    repository:
+      owner: vladkampov
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    
+    # Formula template
+    homepage: "https://github.com/vladkampov/markdocify"
+    description: "Convert documentation websites into consolidated markdown files"
+    license: "MIT"
+    
+    # Installation script
+    install: |
+      bin.install "markdocify"
+      
+      # Install example configurations
+      pkgshare.install "configs" if File.exist?("configs")
+    
+    # Test script
+    test: |
+      assert_match version.to_s, shell_output("#{bin}/markdocify --version")
+      
+      # Test help output
+      help_output = shell_output("#{bin}/markdocify --help")
+      assert_match "markdocify is a CLI tool", help_output
 
 # Snapcraft (Ubuntu/Snap package)
 # Disabled for initial release - requires snapcraft to be installed in CI
