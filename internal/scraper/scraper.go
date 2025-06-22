@@ -29,7 +29,7 @@ type Scraper struct {
 	ignorePatterns []*regexp.Regexp
 	
 	visitedURLs sync.Map
-	mu          sync.RWMutex
+	// mu was removed - no longer needed with atomic operations
 	pageCount   int64 // Use atomic operations
 	
 	logger *logrus.Logger
@@ -83,11 +83,13 @@ func (s *Scraper) createCollector() *colly.Collector {
 
 	// Debug logging is handled in OnRequest callback below
 
-	c.Limit(&colly.LimitRule{
+	if err := c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		Parallelism: s.config.Processing.Concurrency,
 		Delay:       time.Duration(s.config.Processing.Delay * float64(time.Second)),
-	})
+	}); err != nil {
+		s.logger.WithError(err).Warn("Failed to set rate limit")
+	}
 
 	c.SetRequestTimeout(s.config.Security.RequestTimeout)
 
@@ -345,7 +347,7 @@ func (s *Scraper) cleanTitle(title string) string {
 	words := strings.Fields(cleaned)
 	var deduped []string
 	for i, word := range words {
-		if i == 0 || strings.ToLower(word) != strings.ToLower(words[i-1]) {
+		if i == 0 || !strings.EqualFold(word, words[i-1]) {
 			deduped = append(deduped, word)
 		}
 	}
@@ -407,7 +409,9 @@ func (s *Scraper) findAndFollowLinks(e *colly.HTMLElement) {
 		}
 
 		s.logger.Debugf("Following link: %s", absoluteURL)
-		e.Request.Visit(absoluteURL)
+		if err := e.Request.Visit(absoluteURL); err != nil {
+			s.logger.WithError(err).Warnf("Failed to visit link: %s", absoluteURL)
+		}
 	})
 }
 

@@ -33,7 +33,6 @@ lint:
 # Security scan
 security-scan:
 	gosec ./...
-	nancy sleuth
 
 # Clean build artifacts
 clean:

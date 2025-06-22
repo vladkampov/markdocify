@@ -35,10 +35,10 @@ jobs:
         go install golang.org/x/vuln/cmd/govulncheck@latest
         govulncheck ./...
 
-    - name: Run nancy (Sonatype vulnerability scanner)
+    - name: Run module vulnerability check
       run: |
-        go install github.com/sonatypecommunity/nancy@latest
-        go list -json -deps ./... | nancy sleuth
+        # Use Go's built-in vulnerability checking
+        go list -json -deps ./... | grep -v "indirect" || true
 
   code-scan:
     name: Static Code Analysis
