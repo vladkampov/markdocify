@@ -42,8 +42,6 @@ builds:
 # Archives configuration
 archives:
   - id: markdocify
-    builds:
-      - markdocify
     
     # Archive name template
     name_template: >-
@@ -54,6 +52,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     
     # Archive format
+    format: tar.gz
     format_overrides:
       - goos: windows
         format: zip
@@ -107,80 +106,84 @@ dockers:
       - "--platform=linux/amd64"
 
 # Homebrew tap
-brews:
-  - name: markdocify
-    
-    # Repository to push the formula
-    repository:
-      owner: vladkampov
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    
-    # Formula template
-    homepage: "https://github.com/vladkampov/markdocify"
-    description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
-    license: "MIT"
-    
-    # Installation script
-    install: |
-      bin.install "markdocify"
-      
-      # Install example configurations
-      (share/"markdocify").install Dir["configs/examples/*"]
-    
-    # Test script
-    test: |
-      system "#{bin}/markdocify", "--version"
+# Disabled for initial release - requires homebrew-tap repository to exist
+# brews:
+#   - name: markdocify
+#     
+#     # Repository to push the formula
+#     repository:
+#       owner: vladkampov
+#       name: homebrew-tap
+#       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+#     
+#     # Formula template
+#     homepage: "https://github.com/vladkampov/markdocify"
+#     description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
+#     license: "MIT"
+#     
+#     # Installation script
+#     install: |
+#       bin.install "markdocify"
+#       
+#       # Install example configurations
+#       (share/"markdocify").install Dir["configs/examples/*"]
+#     
+#     # Test script
+#     test: |
+#       system "#{bin}/markdocify", "--version"
 
 # Snapcraft (Ubuntu/Snap package)
-snapcrafts:
-  - name: markdocify
-    
-    title: markdocify
-    summary: Scrape documentation sites into Markdown
-    description: |
-      markdocify is a powerful CLI tool that comprehensively scrapes 
-      documentation websites and converts them into well-formatted, 
-      single Markdown files. Perfect for creating LLM training data, 
-      offline documentation, or comprehensive knowledge bases.
-    
-    grade: stable
-    confinement: strict
-    
-    license: MIT
-    
-    apps:
-      markdocify:
-        command: markdocify
-        plugs: ["home", "network"]
+# Disabled for initial release - requires snapcraft to be installed in CI
+# snapcrafts:
+#   - name: markdocify
+#     
+#     title: markdocify
+#     summary: Scrape documentation sites into Markdown
+#     description: |
+#       markdocify is a powerful CLI tool that comprehensively scrapes 
+#       documentation websites and converts them into well-formatted, 
+#       single Markdown files. Perfect for creating LLM training data, 
+#       offline documentation, or comprehensive knowledge bases.
+#     
+#     grade: stable
+#     confinement: strict
+#     
+#     license: MIT
+#     
+#     apps:
+#       markdocify:
+#         command: markdocify
+#         plugs: ["home", "network"]
 
 # Windows Scoop package
-scoops:
-  - name: markdocify
-    
-    repository:
-      owner: vladkampov
-      name: scoop-bucket
-      token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
-    
-    homepage: "https://github.com/vladkampov/markdocify"
-    description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
-    license: MIT
+# Disabled for initial release - requires scoop-bucket repository to exist
+# scoops:
+#   - name: markdocify
+#     
+#     repository:
+#       owner: vladkampov
+#       name: scoop-bucket
+#       token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
+#     
+#     homepage: "https://github.com/vladkampov/markdocify"
+#     description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
+#     license: MIT
 
 # AUR (Arch User Repository)
-aurs:
-  - name: markdocify-bin
-    
-    homepage: "https://github.com/vladkampov/markdocify"
-    description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
-    license: MIT
-    
-    maintainers:
-      - 'Vlad Kampov <your-email@example.com>'
-    
-    private_key: '{{ .Env.AUR_KEY }}'
-    
-    git_url: 'ssh://aur@aur.archlinux.org/markdocify-bin.git'
+# Disabled for initial release - requires AUR setup and SSH keys
+# aurs:
+#   - name: markdocify-bin
+#     
+#     homepage: "https://github.com/vladkampov/markdocify"
+#     description: "Comprehensively scrape documentation sites into beautiful, LLM-ready Markdown"
+#     license: MIT
+#     
+#     maintainers:
+#       - 'Vlad Kampov <your-email@example.com>'
+#     
+#     private_key: '{{ .Env.AUR_KEY }}'
+#     
+#     git_url: 'ssh://aur@aur.archlinux.org/markdocify-bin.git'
 
 # Changelog
 changelog:
