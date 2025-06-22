@@ -24,23 +24,23 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61c2af2112 # v4.1.7
+      uses: actions/checkout@v4 # v4.1.7
       with:
         fetch-depth: 0 # Required for GoReleaser
 
     - name: Set up Go
-      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
+      uses: actions/setup-go@v5 # v5.0.2
       with:
-        go-version: '1.22'
+        go-version: '1.24'
         check-latest: true
 
     - name: Cache Go modules
-      uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+      uses: actions/cache@v4 # v4.1.2
       with:
         path: |
           ~/go/pkg/mod
           ~/.cache/go-build
-        key: ${{ runner.os }}-go-1.22-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-1.24-${{ hashFiles('**/go.sum') }}
 
     - name: Run tests before release
       run: make test
@@ -52,13 +52,13 @@ jobs:
         govulncheck ./...
 
     - name: Install cosign for signing
-      uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+      uses: sigstore/cosign-installer@v3 # v3.5.0
 
     - name: Install syft for SBOM generation
-      uses: anchore/sbom-action/download-syft@d94f46e13c6c62f59525ac9a1e147a99dc0b9bf5 # v0.17.0
+      uses: anchore/sbom-action/download-syft@v0 # v0.17.0
 
     - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
+      uses: goreleaser/goreleaser-action@v6 # v6.0.0
       with:
         distribution: goreleaser
         version: '~> v2'
@@ -68,7 +68,7 @@ jobs:
         HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
 
     - name: Generate build attestation
-      uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c # v1.4.3
+      uses: actions/attest-build-provenance@v1 # v1.4.3
       with:
         subject-path: 'dist/markdocify_*'
 
@@ -81,13 +81,13 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61c2af2112 # v4.1.7
+      uses: actions/checkout@v4 # v4.1.7
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+      uses: docker/setup-buildx-action@v3 # v3.6.1
 
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+      uses: docker/login-action@v3 # v3.3.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -95,7 +95,7 @@ jobs:
 
     - name: Extract metadata
       id: meta
-      uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
+      uses: docker/metadata-action@v5 # v5.5.1
       with:
         images: ghcr.io/${{ github.repository }}
         tags: |
@@ -105,7 +105,7 @@ jobs:
           type=semver,pattern={{major}}
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@16ebe778df0e7752d2cfcbd924afdbbd89c1a755 # v6.6.1
+      uses: docker/build-push-action@v6 # v6.6.1
       with:
         context: .
         platforms: linux/amd64,linux/arm64
