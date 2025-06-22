@@ -72,8 +72,6 @@ checksum:
 # Software Bill of Materials (SBOM)
 sboms:
   - artifacts: archive
-    documents:
-      - "{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json"
 
 # Signing with cosign
 signs:
@@ -89,21 +87,22 @@ signs:
       - "--yes"
 
 # Docker images
-dockers:
-  - image_templates:
-      - "ghcr.io/vladkampov/markdocify:{{ .Version }}"
-      - "ghcr.io/vladkampov/markdocify:latest"
-    
-    dockerfile: Dockerfile
-    
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--platform=linux/amd64"
+# Disabled for initial release - requires special build context setup
+# dockers:
+#   - image_templates:
+#       - "ghcr.io/vladkampov/markdocify:{{ .Version }}"
+#       - "ghcr.io/vladkampov/markdocify:latest"
+#     
+#     dockerfile: Dockerfile
+#     
+#     build_flag_templates:
+#       - "--pull"
+#       - "--label=org.opencontainers.image.created={{.Date}}"
+#       - "--label=org.opencontainers.image.title={{.ProjectName}}"
+#       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+#       - "--label=org.opencontainers.image.version={{.Version}}"
+#       - "--label=org.opencontainers.image.source={{.GitURL}}"
+#       - "--platform=linux/amd64"
 
 # Homebrew tap
 # Disabled for initial release - requires homebrew-tap repository to exist
