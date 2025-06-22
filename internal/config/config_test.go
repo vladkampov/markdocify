@@ -220,3 +220,255 @@ func TestParseSize(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadConfig_ErrorCases(t *testing.T) {
+	tests := []struct {
+		name        string
+		setupFunc   func() (string, func())
+		expectError string
+	}{
+		{
+			name: "nonexistent file",
+			setupFunc: func() (string, func()) {
+				return "/nonexistent/path/config.yml", func() {}
+			},
+			expectError: "failed to read config file",
+		},
+		{
+			name: "invalid YAML",
+			setupFunc: func() (string, func()) {
+				tmpFile, _ := os.CreateTemp("", "invalid-*.yml")
+				tmpFile.WriteString("invalid: yaml: content: [")
+				tmpFile.Close()
+				return tmpFile.Name(), func() { os.Remove(tmpFile.Name()) }
+			},
+			expectError: "failed to parse config file",
+		},
+		{
+			name: "validation failure",
+			setupFunc: func() (string, func()) {
+				tmpFile, _ := os.CreateTemp("", "invalid-config-*.yml")
+				tmpFile.WriteString(`
+name: ""
+base_url: "invalid-url"
+output_file: "test.md"
+start_urls: []
+`)
+				tmpFile.Close()
+				return tmpFile.Name(), func() { os.Remove(tmpFile.Name()) }
+			},
+			expectError: "invalid configuration",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			configPath, cleanup := tt.setupFunc()
+			defer cleanup()
+
+			_, err := LoadConfig(configPath)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tt.expectError)
+		})
+	}
+}
+
+func TestSetDefaults_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name           string
+		config         Config
+		expectedError  string
+		validateResult func(*testing.T, *Config)
+	}{
+		{
+			name: "invalid max file size",
+			config: Config{
+				Security: SecurityConfig{
+					MaxFileSize: "invalid-size",
+				},
+			},
+			expectedError: "invalid max_file_size",
+		},
+		{
+			name: "all defaults applied",
+			config: Config{
+				Security: SecurityConfig{
+					MaxFileSize: "5MB",
+				},
+			},
+			validateResult: func(t *testing.T, cfg *Config) {
+				assert.Equal(t, 5, cfg.Processing.MaxDepth)
+				assert.Equal(t, 3, cfg.Processing.Concurrency)
+				assert.Equal(t, 1.0, cfg.Processing.Delay)
+				assert.Equal(t, "h1", cfg.Selectors.Title)
+				assert.Equal(t, "main, article, .content", cfg.Selectors.Content)
+				assert.Equal(t, "info", cfg.Monitoring.LogLevel)
+				assert.Equal(t, 9090, cfg.Monitoring.MetricsPort)
+				assert.Equal(t, int64(5*1024*1024), cfg.Security.MaxFileSizeBytes)
+				assert.Equal(t, "colly", cfg.Engines[0].Type)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.config.SetDefaults()
+			
+			if tt.expectedError != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectedError)
+			} else {
+				require.NoError(t, err)
+				if tt.validateResult != nil {
+					tt.validateResult(t, &tt.config)
+				}
+			}
+		})
+	}
+}
+
+func TestValidateURL_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name        string
+		url         string
+		fieldName   string
+		expectError string
+	}{
+		{
+			name:        "empty URL",
+			url:         "",
+			fieldName:   "test_url",
+			expectError: "test_url cannot be empty",
+		},
+		{
+			name:        "malformed URL",
+			url:         "ht tp://invalid url",
+			fieldName:   "test_url",
+			expectError: "invalid test_url",
+		},
+		{
+			name:        "missing scheme",
+			url:         "example.com/path",
+			fieldName:   "test_url",
+			expectError: "test_url must include scheme",
+		},
+		{
+			name:        "missing host",
+			url:         "https://",
+			fieldName:   "test_url",
+			expectError: "test_url must include host",
+		},
+		{
+			name:        "invalid scheme",
+			url:         "ftp://example.com",
+			fieldName:   "test_url",
+			expectError: "test_url must use http or https scheme",
+		},
+		{
+			name:        "valid https URL",
+			url:         "https://example.com/path",
+			fieldName:   "test_url",
+			expectError: "",
+		},
+		{
+			name:        "valid http URL",
+			url:         "http://example.com",
+			fieldName:   "test_url",
+			expectError: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateURL(tt.url, tt.fieldName)
+			
+			if tt.expectError != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.expectError)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidate_ComprehensiveCases(t *testing.T) {
+	tests := []struct {
+		name        string
+		config      Config
+		expectError string
+	}{
+		{
+			name: "negative delay",
+			config: Config{
+				Name:       "Test",
+				BaseURL:    "https://example.com",
+				OutputFile: "test.md",
+				StartURLs:  []string{"https://example.com"},
+				Processing: ProcessingConfig{
+					MaxDepth:    1,
+					Concurrency: 1,
+					Delay:       -1.0,
+				},
+			},
+			expectError: "delay must be non-negative",
+		},
+		{
+			name: "negative concurrency",
+			config: Config{
+				Name:       "Test",
+				BaseURL:    "https://example.com",
+				OutputFile: "test.md",
+				StartURLs:  []string{"https://example.com"},
+				Processing: ProcessingConfig{
+					MaxDepth:    1,
+					Concurrency: 0,
+					Delay:       1.0,
+				},
+			},
+			expectError: "concurrency must be greater than 0",
+		},
+		{
+			name: "empty allowed domain",
+			config: Config{
+				Name:       "Test",
+				BaseURL:    "https://example.com",
+				OutputFile: "test.md",
+				StartURLs:  []string{"https://example.com"},
+				Processing: ProcessingConfig{
+					MaxDepth:    1,
+					Concurrency: 1,
+				},
+				Security: SecurityConfig{
+					AllowedDomains: []string{""},
+				},
+			},
+			expectError: "allowed_domains[0] cannot be empty",
+		},
+		{
+			name: "invalid domain format",
+			config: Config{
+				Name:       "Test",
+				BaseURL:    "https://example.com",
+				OutputFile: "test.md",
+				StartURLs:  []string{"https://example.com"},
+				Processing: ProcessingConfig{
+					MaxDepth:    1,
+					Concurrency: 1,
+				},
+				Security: SecurityConfig{
+					AllowedDomains: []string{"invalid-domain-format"},
+				},
+			},
+			expectError: "invalid domain format",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.config.Validate()
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tt.expectError)
+		})
+	}
+}
