@@ -238,7 +238,7 @@ func TestLoadConfig_ErrorCases(t *testing.T) {
 			name: "invalid YAML",
 			setupFunc: func() (string, func()) {
 				tmpFile, _ := os.CreateTemp("", "invalid-*.yml")
-				tmpFile.WriteString("invalid: yaml: content: [")
+				_, _ = tmpFile.WriteString("invalid: yaml: content: [")
 				tmpFile.Close()
 				return tmpFile.Name(), func() { os.Remove(tmpFile.Name()) }
 			},
@@ -248,7 +248,7 @@ func TestLoadConfig_ErrorCases(t *testing.T) {
 			name: "validation failure",
 			setupFunc: func() (string, func()) {
 				tmpFile, _ := os.CreateTemp("", "invalid-config-*.yml")
-				tmpFile.WriteString(`
+				_, _ = tmpFile.WriteString(`
 name: ""
 base_url: "invalid-url"
 output_file: "test.md"
