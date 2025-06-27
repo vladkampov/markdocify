@@ -44,7 +44,7 @@ func TestCreateSanitizer(t *testing.T) {
 					InlineStyles:   false,
 				},
 			},
-			inputHTML: `<script>alert('xss')</script><p>Safe content</p>`,
+			inputHTML:      `<script>alert('xss')</script><p>Safe content</p>`,
 			expectContains: []string{"Safe content"},
 			expectRemoved:  []string{"script", "alert"},
 		},
@@ -56,7 +56,7 @@ func TestCreateSanitizer(t *testing.T) {
 					InlineStyles:   false,
 				},
 			},
-			inputHTML: `<img src="test.jpg" alt="test"><p>Content</p>`,
+			inputHTML:      `<img src="test.jpg" alt="test"><p>Content</p>`,
 			expectContains: []string{"img", "src=\"test.jpg\"", "alt=\"test\""},
 		},
 		{
@@ -67,7 +67,7 @@ func TestCreateSanitizer(t *testing.T) {
 					InlineStyles:   false,
 				},
 			},
-			inputHTML: `<pre><code class="language-go">func main() {}</code></pre>`,
+			inputHTML:      `<pre><code class="language-go">func main() {}</code></pre>`,
 			expectContains: []string{"<pre>", "<code", "func main()"},
 		},
 	}
@@ -76,13 +76,13 @@ func TestCreateSanitizer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			converter := &Converter{config: tt.config}
 			sanitizer := converter.createSanitizer()
-			
+
 			result := sanitizer.Sanitize(tt.inputHTML)
-			
+
 			for _, expected := range tt.expectContains {
 				assert.Contains(t, result, expected)
 			}
-			
+
 			for _, removed := range tt.expectRemoved {
 				assert.NotContains(t, result, removed)
 			}
@@ -94,10 +94,10 @@ func TestCreateMarkdownConverter(t *testing.T) {
 	converter := &Converter{
 		config: &config.Config{},
 	}
-	
+
 	mdConverter := converter.createMarkdownConverter()
 	assert.NotNil(t, mdConverter)
-	
+
 	// Test that it can convert basic HTML
 	result, err := mdConverter.ConvertString("<h1>Title</h1><p>Paragraph</p>")
 	require.NoError(t, err)

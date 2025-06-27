@@ -59,7 +59,7 @@ func TestIsAllowedDomain(t *testing.T) {
 				},
 			}
 			scraper := &Scraper{config: cfg}
-			
+
 			result := scraper.isAllowedDomain(tt.url)
 			assert.Equal(t, tt.expected, result)
 		})
@@ -269,7 +269,7 @@ func TestVisitWithRetry(t *testing.T) {
 
 		// Use a unique path for each attempt
 		testURL := server.URL + fmt.Sprintf("/test-retry-path-%d", i)
-		
+
 		// This will trigger server response based on attemptCount
 		err = scraper.visitWithRetry(testURL, 1) // Single attempt per scraper
 		if i < 2 {
@@ -278,7 +278,7 @@ func TestVisitWithRetry(t *testing.T) {
 			assert.NoError(t, err, "Should succeed on attempt 3")
 		}
 	}
-	
+
 	assert.Equal(t, 3, attemptCount, "Should have made 3 total attempts")
 }
 
@@ -355,9 +355,9 @@ func TestCompilePatterns(t *testing.T) {
 				IgnorePatterns: tt.ignorePatterns,
 			}
 			scraper := &Scraper{config: cfg}
-			
+
 			err := scraper.compilePatterns()
-			
+
 			if tt.expectError {
 				assert.Error(t, err)
 				if tt.errorContains != "" {

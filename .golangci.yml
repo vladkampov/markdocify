@@ -1,0 +1,79 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - gofmt          # Check that code is formatted
+    - goimports      # Check import statements are formatted
+    - govet          # Check for common mistakes
+    - errcheck       # Check for unchecked errors
+    - staticcheck    # Advanced static analysis
+    - ineffassign    # Detect ineffectual assignments
+    - unused         # Check for unused code
+    - gosimple       # Suggest code simplifications
+    - gocritic       # Comprehensive code analyzer
+    - misspell       # Check for misspelled words
+    - godot          # Check that comments end in periods
+    - prealloc       # Find slice preallocation opportunities
+    - nolintlint     # Check nolint directives
+    - revive         # Fast, configurable linter
+    - bodyclose      # Check HTTP response body is closed
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/vladkampov/markdocify
+  govet:
+    check-shadowing: true
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+    disabled-checks:
+      - commentedOutCode
+  revive:
+    severity: warning
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - ineffassign
+    - path: cmd/
+      linters:
+        - gochecknoinits
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

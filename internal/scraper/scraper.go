@@ -13,34 +13,33 @@ import (
 
 	"github.com/gocolly/colly/v2"
 	"github.com/sirupsen/logrus"
+	"github.com/vladkampov/markdocify/internal/aggregator"
 	"github.com/vladkampov/markdocify/internal/config"
 	"github.com/vladkampov/markdocify/internal/converter"
-	"github.com/vladkampov/markdocify/internal/aggregator"
 	"github.com/vladkampov/markdocify/internal/types"
 )
 
 type Scraper struct {
-	config    *config.Config
-	collector *colly.Collector
-	converter *converter.Converter
+	config     *config.Config
+	collector  *colly.Collector
+	converter  *converter.Converter
 	aggregator *aggregator.Aggregator
-	
+
 	followPatterns []*regexp.Regexp
 	ignorePatterns []*regexp.Regexp
-	
+
 	visitedURLs sync.Map
 	// mu was removed - no longer needed with atomic operations
-	pageCount   int64 // Use atomic operations
-	
+	pageCount int64 // Use atomic operations
+
 	logger *logrus.Logger
 }
 
 const (
-	DefaultMaxRetries = 3
+	DefaultMaxRetries  = 3
 	DefaultBackoffBase = 1 * time.Second
-	MaxBackoffDelay = 30 * time.Second
+	MaxBackoffDelay    = 30 * time.Second
 )
-
 
 func New(cfg *config.Config) (*Scraper, error) {
 	logger := logrus.New()
@@ -60,7 +59,7 @@ func New(cfg *config.Config) (*Scraper, error) {
 	}
 
 	s.collector = s.createCollector()
-	
+
 	converter, err := converter.New(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create converter: %w", err)
@@ -196,7 +195,7 @@ func (s *Scraper) isPrivacyOrLegalURL(urlStr string) bool {
 		"login", "signup", "register", "account", "profile",
 		"404", "error", "maintenance", "status",
 	}
-	
+
 	for _, pattern := range skipPatterns {
 		if matched, _ := regexp.MatchString("(?i)/("+pattern+")($|[/?#])", urlStr); matched {
 			return true
@@ -208,12 +207,12 @@ func (s *Scraper) isPrivacyOrLegalURL(urlStr string) bool {
 func (s *Scraper) handleHTML(e *colly.HTMLElement) {
 	currentURL := e.Request.URL.String()
 	depth := e.Request.Depth
-	
+
 	s.logger.WithFields(logrus.Fields{
 		"url":   currentURL,
 		"depth": depth,
 	}).Info("Processing page")
-	
+
 	if !s.isAllowedDomain(currentURL) {
 		s.logger.WithFields(logrus.Fields{
 			"url":    currentURL,
@@ -240,7 +239,7 @@ func (s *Scraper) handleHTML(e *colly.HTMLElement) {
 		"url":   currentURL,
 		"title": title,
 	}).Debug("Extracted title")
-	
+
 	content := s.extractContent(e)
 
 	if content == "" {
@@ -250,7 +249,7 @@ func (s *Scraper) handleHTML(e *colly.HTMLElement) {
 		}).Warn("Skipping page")
 		return
 	}
-	
+
 	s.logger.WithFields(logrus.Fields{
 		"url":            currentURL,
 		"content_length": len(content),
@@ -301,31 +300,31 @@ func (s *Scraper) extractTitle(e *colly.HTMLElement) string {
 			return s.cleanTitle(strings.TrimSpace(title))
 		}
 	}
-	
+
 	title := e.ChildText("title")
 	if title != "" {
 		return s.cleanTitle(strings.TrimSpace(title))
 	}
-	
+
 	return "Untitled"
 }
 
 func (s *Scraper) cleanTitle(title string) string {
 	// Conservative title cleaning - only remove obvious artifacts
 	cleaned := title
-	
+
 	// First remove feature status indicators and other long descriptive text
 	statusPatterns := []string{
 		`\s*This feature is available in the latest.*?React\s*`,
 		`\s*This feature is available in the latest Canary\s*`,
 		`\s*This feature is available in the latest Experimental version of React\s*`,
 	}
-	
+
 	for _, pattern := range statusPatterns {
 		re := regexp.MustCompile(`(?i)` + pattern)
 		cleaned = re.ReplaceAllString(cleaned, "")
 	}
-	
+
 	// Then remove site branding patterns (end of title)
 	brandingPatterns := []string{
 		`\s*–\s*React\s*$`,
@@ -337,12 +336,12 @@ func (s *Scraper) cleanTitle(title string) string {
 		`\s*\|\s*.*Documentation\s*$`,
 		`\s*\|\s*.*Docs\s*$`,
 	}
-	
+
 	for _, pattern := range brandingPatterns {
 		re := regexp.MustCompile(`(?i)` + pattern)
 		cleaned = re.ReplaceAllString(cleaned, "")
 	}
-	
+
 	// Only remove consecutive identical words (conservative deduplication)
 	words := strings.Fields(cleaned)
 	var deduped []string
@@ -352,7 +351,7 @@ func (s *Scraper) cleanTitle(title string) string {
 		}
 	}
 	cleaned = strings.Join(deduped, " ")
-	
+
 	return strings.TrimSpace(cleaned)
 }
 
@@ -365,16 +364,16 @@ func (s *Scraper) extractContent(e *colly.HTMLElement) string {
 	s.logger.Debugf("Using content selector: %s", contentSelector)
 
 	var contentParts []string
-	
+
 	e.ForEach(contentSelector, func(i int, el *colly.HTMLElement) {
 		s.logger.Debugf("Found content element %d", i)
-		
+
 		for _, excludeSelector := range s.config.Selectors.Exclude {
 			el.ForEach(excludeSelector, func(j int, excluded *colly.HTMLElement) {
 				excluded.DOM.Remove()
 			})
 		}
-		
+
 		html, err := el.DOM.Html()
 		if err == nil && strings.TrimSpace(html) != "" {
 			s.logger.Debugf("Extracted content length: %d", len(html))
@@ -395,7 +394,7 @@ func (s *Scraper) findAndFollowLinks(e *colly.HTMLElement) {
 		}
 
 		absoluteURL := e.Request.AbsoluteURL(link)
-		
+
 		if !s.shouldFollow(absoluteURL) {
 			return
 		}
@@ -426,10 +425,10 @@ func (s *Scraper) Run() error {
 // Returns an error if all start URLs fail, context is cancelled, or output generation fails.
 func (s *Scraper) RunWithContext(ctx context.Context) error {
 	s.logger.WithFields(logrus.Fields{
-		"name":            s.config.Name,
-		"output_file":     s.config.OutputFile,
-		"start_urls":      len(s.config.StartURLs),
-		"max_depth":       s.config.Processing.MaxDepth,
+		"name":             s.config.Name,
+		"output_file":      s.config.OutputFile,
+		"start_urls":       len(s.config.StartURLs),
+		"max_depth":        s.config.Processing.MaxDepth,
 		"scraping_timeout": s.config.Security.ScrapingTimeout.String(),
 	}).Info("Starting scraper")
 
@@ -438,10 +437,10 @@ func (s *Scraper) RunWithContext(ctx context.Context) error {
 	defer cancel()
 
 	done := make(chan error, 1)
-	
+
 	go func() {
 		defer close(done)
-		
+
 		var allErrors []error
 		for _, startURL := range s.config.StartURLs {
 			select {
@@ -452,7 +451,7 @@ func (s *Scraper) RunWithContext(ctx context.Context) error {
 				s.logger.WithFields(logrus.Fields{
 					"start_url": startURL,
 				}).Info("Processing start URL")
-				
+
 				if err := s.visitWithRetry(startURL, DefaultMaxRetries); err != nil {
 					s.logger.WithFields(logrus.Fields{
 						"start_url": startURL,
@@ -475,9 +474,9 @@ func (s *Scraper) RunWithContext(ctx context.Context) error {
 		s.logger.WithFields(logrus.Fields{
 			"total_pages": finalPageCount,
 		}).Info("🎉 Scraping completed")
-		
+
 		s.logger.Info("📝 Generating comprehensive markdown output...")
-		
+
 		if err := s.aggregator.GenerateOutput(); err != nil {
 			done <- fmt.Errorf("failed to generate output: %w", err)
 			return
@@ -488,7 +487,7 @@ func (s *Scraper) RunWithContext(ctx context.Context) error {
 			"output_file":   s.config.OutputFile,
 			"partial_fails": len(allErrors),
 		}).Info("✅ Documentation scraping completed successfully")
-		
+
 		// Log any partial failures but don't fail overall if we got some content
 		if len(allErrors) > 0 && finalPageCount > 0 {
 			s.logger.WithFields(logrus.Fields{
@@ -496,7 +495,7 @@ func (s *Scraper) RunWithContext(ctx context.Context) error {
 				"success_pages": finalPageCount,
 			}).Warn("⚠️  Some start URLs failed, but scraping succeeded")
 		}
-		
+
 		done <- nil
 	}()
 

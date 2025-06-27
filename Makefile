@@ -1,4 +1,4 @@
-.PHONY: build test clean install lint security-scan
+.PHONY: build test clean install lint security-scan fmt fmt-check
 
 # Build configuration
 BINARY_NAME=markdocify
@@ -33,6 +33,24 @@ lint:
 # Security scan
 security-scan:
 	gosec ./...
+
+# Format Go code
+fmt:
+	@echo "Formatting Go code..."
+	@gofmt -w .
+	@echo "✓ Code formatted"
+
+# Check if code is formatted
+fmt-check:
+	@echo "Checking Go code formatting..."
+	@if [ -n "$$(gofmt -l .)" ]; then \
+		echo "❌ The following files need formatting:"; \
+		gofmt -l .; \
+		echo "Run 'make fmt' to format them"; \
+		exit 1; \
+	else \
+		echo "✓ All files are properly formatted"; \
+	fi
 
 # Clean build artifacts
 clean:

@@ -76,6 +76,18 @@ jobs:
         go-version: '1.24'
         check-latest: true
 
+    - name: Check Go formatting
+      run: |
+        echo "Checking Go code formatting..."
+        if [ -n "$(gofmt -l .)" ]; then
+          echo "❌ The following files need formatting:"
+          gofmt -l .
+          echo ""
+          echo "Run 'make fmt' or 'gofmt -w .' to format them"
+          exit 1
+        fi
+        echo "✓ All files are properly formatted"
+
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v6 # v6.1.0
       with:
