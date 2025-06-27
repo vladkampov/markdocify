@@ -1,0 +1,87 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - gofmt          # Check that code is formatted (auto-fixable)
+    - goimports      # Check import statements are formatted (auto-fixable)
+    - govet          # Check for common mistakes
+    - errcheck       # Check for unchecked errors
+    - staticcheck    # Advanced static analysis
+    - ineffassign    # Detect ineffectual assignments
+    - unused         # Check for unused code (auto-fixable)
+    - gosimple       # Suggest code simplifications (auto-fixable)
+    - gocritic       # Comprehensive code analyzer
+    - misspell       # Check for misspelled words (auto-fixable)
+    - godot          # Check that comments end in periods (auto-fixable)
+    - prealloc       # Find slice preallocation opportunities
+    - nolintlint     # Check nolint directives
+    - revive         # Fast, configurable linter
+    - bodyclose      # Check HTTP response body is closed
+    - gci            # Sorts imports (auto-fixable)
+    - whitespace     # Checks for whitespace issues (auto-fixable)
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/vladkampov/markdocify
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/vladkampov/markdocify)
+  govet:
+    enable:
+      - shadow
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+    disabled-checks:
+      - commentedOutCode
+  revive:
+    severity: warning
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - ineffassign
+    - path: cmd/
+      linters:
+        - gochecknoinits
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

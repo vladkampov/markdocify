@@ -107,15 +107,15 @@ func createQuickConfig(inputURL string) (*config.Config, error) {
 	// Create comprehensive domain patterns for following links
 	domain := parsedURL.Hostname()
 	basePattern := strings.ReplaceAll(domain, ".", "\\.")
-	
+
 	// Much more aggressive following patterns for comprehensive documentation coverage
 	followPatterns := []string{
 		fmt.Sprintf("^https?://%s/.*", basePattern), // Main domain pattern
 	}
-	
+
 	// Add specific documentation path patterns based on the starting URL
 	if strings.Contains(inputURL, "/docs") {
-		followPatterns = append(followPatterns, 
+		followPatterns = append(followPatterns,
 			fmt.Sprintf("^https?://%s/docs/.*", basePattern),
 			fmt.Sprintf("^https?://%s/documentation/.*", basePattern),
 			fmt.Sprintf("^https?://%s/guide/.*", basePattern),
@@ -135,7 +135,7 @@ func createQuickConfig(inputURL string) (*config.Config, error) {
 		BaseURL:    fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host),
 		OutputFile: outputFile,
 		StartURLs:  []string{inputURL},
-		
+
 		FollowPatterns: followPatterns,
 		IgnorePatterns: []string{
 			// Media files
@@ -178,7 +178,7 @@ func createQuickConfig(inputURL string) (*config.Config, error) {
 		},
 
 		Selectors: config.SelectorConfig{
-			Title:   "h1, title, .page-title, .doc-title, [data-testid='page-title']",
+			Title: "h1, title, .page-title, .doc-title, [data-testid='page-title']",
 			Content: strings.Join([]string{
 				// Primary content containers
 				"main", "article", ".content", ".documentation", ".docs", "#content", ".main-content",

@@ -60,20 +60,20 @@ type OutputConfig struct {
 }
 
 type SecurityConfig struct {
-	RespectRobots       bool          `yaml:"respect_robots"`
-	CheckTerms          bool          `yaml:"check_terms"`
-	MaxFileSize         string        `yaml:"max_file_size"`
-	AllowedDomains      []string      `yaml:"allowed_domains"`
-	RequestTimeout      time.Duration `yaml:"request_timeout"`
-	ScrapingTimeout     time.Duration `yaml:"scraping_timeout"`
-	MaxFileSizeBytes    int64
+	RespectRobots    bool          `yaml:"respect_robots"`
+	CheckTerms       bool          `yaml:"check_terms"`
+	MaxFileSize      string        `yaml:"max_file_size"`
+	AllowedDomains   []string      `yaml:"allowed_domains"`
+	RequestTimeout   time.Duration `yaml:"request_timeout"`
+	ScrapingTimeout  time.Duration `yaml:"scraping_timeout"`
+	MaxFileSizeBytes int64
 }
 
 type MonitoringConfig struct {
-	EnableMetrics     bool   `yaml:"enable_metrics"`
-	LogLevel          string `yaml:"log_level"`
-	ProgressUpdates   bool   `yaml:"progress_updates"`
-	MetricsPort       int    `yaml:"metrics_port"`
+	EnableMetrics   bool   `yaml:"enable_metrics"`
+	LogLevel        string `yaml:"log_level"`
+	ProgressUpdates bool   `yaml:"progress_updates"`
+	MetricsPort     int    `yaml:"metrics_port"`
 }
 
 func LoadConfig(path string) (*Config, error) {
@@ -130,7 +130,7 @@ func (c *Config) SetDefaults() error {
 	}
 	c.Security.MaxFileSizeBytes = maxSize
 	c.Security.RequestTimeout = 30 * time.Second
-	
+
 	// Set default scraping timeout - generous for large documentation sites
 	if c.Security.ScrapingTimeout == 0 {
 		c.Security.ScrapingTimeout = 10 * time.Minute
@@ -153,15 +153,15 @@ func (c *Config) Validate() error {
 	if c.Name == "" {
 		return fmt.Errorf("name is required")
 	}
-	
+
 	if err := validateURL(c.BaseURL, "base_url"); err != nil {
 		return err
 	}
-	
+
 	if c.OutputFile == "" {
 		return fmt.Errorf("output_file is required")
 	}
-	
+
 	if len(c.StartURLs) == 0 {
 		return fmt.Errorf("start_urls is required and must contain at least one URL")
 	}

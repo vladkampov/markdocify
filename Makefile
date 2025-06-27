@@ -1,4 +1,4 @@
-.PHONY: build test clean install lint security-scan
+.PHONY: build test clean install lint security-scan fmt fmt-check check-all fmt-fix
 
 # Build configuration
 BINARY_NAME=markdocify
@@ -33,6 +33,53 @@ lint:
 # Security scan
 security-scan:
 	gosec ./...
+
+# Format Go code
+fmt:
+	@echo "Formatting Go code..."
+	@gofmt -w .
+	@goimports -w .
+	@echo "✓ Code formatted"
+
+# Auto-fix what we can with golangci-lint
+fmt-fix:
+	@echo "Auto-fixing code issues..."
+	@gofmt -w .
+	@goimports -w .
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+		echo "Running golangci-lint with auto-fix..."; \
+		golangci-lint run --fix; \
+	else \
+		echo "⚠️  golangci-lint not installed - only running gofmt/goimports"; \
+	fi
+	@echo "✓ Auto-fixes applied"
+
+# Check if code is formatted
+fmt-check:
+	@echo "Checking Go code formatting..."
+	@if [ -n "$$(gofmt -l .)" ]; then \
+		echo "❌ The following files need formatting:"; \
+		gofmt -l .; \
+		echo "Run 'make fmt' to format them"; \
+		exit 1; \
+	else \
+		echo "✓ All files are properly formatted"; \
+	fi
+
+# Run all checks locally (same as CI)
+check-all: fmt-check
+	@echo "Running all local checks..."
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+		echo "Running linter..."; \
+		golangci-lint run; \
+	else \
+		echo "⚠️  golangci-lint not installed. Install with:"; \
+		echo "   brew install golangci-lint"; \
+		echo "   OR: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; \
+	fi
+	@echo "Running tests..."
+	@go test ./...
+	@echo "✅ All checks passed!"
 
 # Clean build artifacts
 clean:

@@ -70,15 +70,15 @@ func TestGenerateOutput(t *testing.T) {
 	require.NoError(t, err)
 
 	contentStr := string(content)
-	
+
 	// Verify metadata
 	assert.Contains(t, contentStr, "# Test Documentation")
 	assert.Contains(t, contentStr, "**Total Pages**: 2")
 	assert.Contains(t, contentStr, "**Max Depth**: 2")
-	
+
 	// Verify TOC
 	assert.Contains(t, contentStr, "## Table of Contents")
-	
+
 	// Verify content
 	assert.Contains(t, contentStr, "# Home")
 	assert.Contains(t, contentStr, "## API")
@@ -140,7 +140,7 @@ func TestSortPages(t *testing.T) {
 	assert.Equal(t, 0, agg.pages[1].Depth)
 	assert.Equal(t, 1, agg.pages[2].Depth)
 	assert.Equal(t, 1, agg.pages[3].Depth)
-	
+
 	// Within same depth, should be sorted by URL
 	assert.True(t, agg.pages[0].URL < agg.pages[1].URL)
 	assert.True(t, agg.pages[2].URL < agg.pages[3].URL)
@@ -199,4 +199,3 @@ func TestMemoryLimitWarning(t *testing.T) {
 
 	assert.Equal(t, 5, agg.GetPageCount())
 }
-

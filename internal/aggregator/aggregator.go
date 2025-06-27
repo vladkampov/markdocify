@@ -13,8 +13,10 @@ import (
 	"github.com/vladkampov/markdocify/internal/config"
 )
 
+// MaxPagesInMemory defines the threshold for warning about memory usage.
 const MaxPagesInMemory = 1000
 
+// Aggregator collects and organizes scraped pages into a single output document.
 type Aggregator struct {
 	config        *config.Config
 	pages         []*Page
@@ -61,7 +63,7 @@ func (a *Aggregator) AddPage(url, title, content string, depth int) {
 		Depth:     depth,
 		Timestamp: time.Now(),
 	}
-	
+
 	a.pages = append(a.pages, page)
 	a.contentHashes[contentHash] = true
 }
@@ -114,13 +116,13 @@ func (a *Aggregator) writeMetadata(output *strings.Builder) {
 
 func (a *Aggregator) writeTableOfContents(output *strings.Builder) {
 	output.WriteString("## Table of Contents\n\n")
-	
+
 	for _, page := range a.pages {
 		indent := strings.Repeat("  ", page.Depth)
 		anchor := a.createAnchor(page.Title)
 		output.WriteString(fmt.Sprintf("%s- [%s](#%s)\n", indent, page.Title, anchor))
 	}
-	
+
 	output.WriteString("\n---\n\n")
 }
 
@@ -155,13 +157,13 @@ func (a *Aggregator) createAnchor(title string) string {
 	anchor = strings.ReplaceAll(anchor, "<", "")
 	anchor = strings.ReplaceAll(anchor, ">", "")
 	anchor = strings.ReplaceAll(anchor, ",", "")
-	
+
 	for strings.Contains(anchor, "--") {
 		anchor = strings.ReplaceAll(anchor, "--", "-")
 	}
-	
+
 	anchor = strings.Trim(anchor, "-")
-	
+
 	return anchor
 }
 
@@ -180,7 +182,7 @@ func (a *Aggregator) writeContent(output *strings.Builder) {
 		if headingLevel > 6 {
 			headingLevel = 6
 		}
-		
+
 		headingPrefix := strings.Repeat("#", headingLevel)
 		output.WriteString(fmt.Sprintf("%s %s\n\n", headingPrefix, pageTitle))
 
@@ -203,7 +205,7 @@ func (a *Aggregator) extractTitleFromURL(url string) string {
 		if lastPart == "" && len(parts) > 1 {
 			lastPart = parts[len(parts)-2]
 		}
-		
+
 		if lastPart != "" {
 			title := strings.ReplaceAll(lastPart, "-", " ")
 			title = strings.ReplaceAll(title, "_", " ")
@@ -211,7 +213,7 @@ func (a *Aggregator) extractTitleFromURL(url string) string {
 			return title
 		}
 	}
-	
+
 	return "Untitled"
 }
 
@@ -220,7 +222,11 @@ func (a *Aggregator) writeToFile(content string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			err = fmt.Errorf("failed to close file: %w", closeErr)
+		}
+	}()
 
 	_, err = file.WriteString(content)
 	if err != nil {
