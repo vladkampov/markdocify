@@ -197,7 +197,12 @@ func (s *Scraper) isPrivacyOrLegalURL(urlStr string) bool {
 	}
 
 	for _, pattern := range skipPatterns {
-		if matched, _ := regexp.MatchString("(?i)/("+pattern+")($|[/?#])", urlStr); matched {
+		matched, err := regexp.MatchString("(?i)/("+pattern+")($|[/?#])", urlStr)
+		if err != nil {
+			// Log regex error but continue checking other patterns
+			continue
+		}
+		if matched {
 			return true
 		}
 	}

@@ -1,3 +1,4 @@
+// Package converter provides HTML to Markdown conversion functionality.
 package converter
 
 import (
@@ -11,12 +12,14 @@ import (
 	"github.com/vladkampov/markdocify/internal/types"
 )
 
+// Converter handles the conversion of HTML content to Markdown format.
 type Converter struct {
 	config      *config.Config
 	sanitizer   *bluemonday.Policy
 	mdConverter *md.Converter
 }
 
+// New creates a new Converter instance with the provided configuration.
 func New(cfg *config.Config) (*Converter, error) {
 	c := &Converter{
 		config: cfg,
@@ -59,6 +62,7 @@ func (c *Converter) createMarkdownConverter() *md.Converter {
 	return converter
 }
 
+// ConvertToMarkdown converts the HTML content of a page to Markdown format.
 func (c *Converter) ConvertToMarkdown(page *types.PageContent) (string, error) {
 	if page.Content == "" {
 		return "", fmt.Errorf("no content to convert")

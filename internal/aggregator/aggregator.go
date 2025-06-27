@@ -13,8 +13,10 @@ import (
 	"github.com/vladkampov/markdocify/internal/config"
 )
 
+// MaxPagesInMemory defines the threshold for warning about memory usage.
 const MaxPagesInMemory = 1000
 
+// Aggregator collects and organizes scraped pages into a single output document.
 type Aggregator struct {
 	config        *config.Config
 	pages         []*Page
@@ -220,7 +222,11 @@ func (a *Aggregator) writeToFile(content string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			err = fmt.Errorf("failed to close file: %w", closeErr)
+		}
+	}()
 
 	_, err = file.WriteString(content)
 	if err != nil {

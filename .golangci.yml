@@ -5,26 +5,30 @@ run:
 
 linters:
   enable:
-    - gofmt          # Check that code is formatted
-    - goimports      # Check import statements are formatted
+    - gofmt          # Check that code is formatted (auto-fixable)
+    - goimports      # Check import statements are formatted (auto-fixable)
     - govet          # Check for common mistakes
     - errcheck       # Check for unchecked errors
     - staticcheck    # Advanced static analysis
     - ineffassign    # Detect ineffectual assignments
-    - unused         # Check for unused code
-    - gosimple       # Suggest code simplifications
+    - unused         # Check for unused code (auto-fixable)
+    - gosimple       # Suggest code simplifications (auto-fixable)
     - gocritic       # Comprehensive code analyzer
-    - misspell       # Check for misspelled words
-    - godot          # Check that comments end in periods
+    - misspell       # Check for misspelled words (auto-fixable)
+    - godot          # Check that comments end in periods (auto-fixable)
     - prealloc       # Find slice preallocation opportunities
     - nolintlint     # Check nolint directives
     - revive         # Fast, configurable linter
     - bodyclose      # Check HTTP response body is closed
+    - gci            # Sorts imports (auto-fixable)
+    - whitespace     # Checks for whitespace issues (auto-fixable)
 
 linters-settings:
   gofmt:
     simplify: true
   goimports:
+    local-prefixes: github.com/vladkampov/markdocify
+  gci:
     local-prefixes: github.com/vladkampov/markdocify
   govet:
     enable:
